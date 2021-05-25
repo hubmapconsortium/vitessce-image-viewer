@@ -12,7 +12,7 @@ import {
   useViewerStore,
   useChannelSettings
 } from '../state';
-import { useWindowSize } from '../utils';
+import { useWindowSize, getPhysicalSizeScalingMatrix } from '../utils';
 import { DEFAULT_OVERVIEW } from '../constants';
 
 const Viewer = () => {
@@ -23,9 +23,7 @@ const Viewer = () => {
     lensSelection,
     colormap,
     renderingMode,
-    xSlice,
-    ySlice,
-    zSlice,
+    sphericals,
     resolution,
     isLensOn,
     zoomLock,
@@ -34,6 +32,21 @@ const Viewer = () => {
     onViewportLoad,
     useFixedAxis
   } = useImageSettingsStore();
+  const source = loader[0];
+  const physicalSizeScalingMatrix = getPhysicalSizeScalingMatrix(source);
+  const pixelScalingMatrix = new Matrix4().scale(
+    ['x', 'y', 'z'].map(d => source.shape[source.labels.indexOf(d)])
+  );
+  const clippingPlanes = sphericals.map(v =>
+    new Plane().fromPointNormal(
+      pixelScalingMatrix.transformPoint(
+        physicalSizeScalingMatrix.transformPoint(v.toVector3())
+      ),
+      pixelScalingMatrix.transformPoint(
+        physicalSizeScalingMatrix.transformPoint(v.toVector3())
+      )
+    )
+  );
   return use3d ? (
     <VolumeViewer
       loader={loader}
@@ -42,9 +55,7 @@ const Viewer = () => {
       channelIsOn={isOn}
       loaderSelection={selections}
       colormap={colormap.length > 0 && colormap}
-      xSlice={xSlice}
-      ySlice={ySlice}
-      zSlice={zSlice}
+      clippingPlanes={clippingPlanes}
       resolution={resolution}
       renderingMode={renderingMode}
       height={viewSize.height}

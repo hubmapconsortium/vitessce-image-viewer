@@ -40,7 +40,6 @@ void main() {
        | 
        |
        #
-
   This next diagram shows the volume after the inverse model matrix has placed it back in model coordinates, but the eye still in world space. 
        ^
     ___|___
@@ -51,7 +50,6 @@ void main() {
        |
        |
        #
-
   Finally, we apply the inverse model matrix transformation to the eye as well to bring it too into world space.
   Notice that the ray here matches the "voxels" through which the first ray also passes, as desired.
          ^

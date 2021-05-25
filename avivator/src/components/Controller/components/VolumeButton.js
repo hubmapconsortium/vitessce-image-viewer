@@ -117,6 +117,9 @@ function VolumeButton() {
                 setViewerState({
                   isChannelLoading: selections.map(_ => false)
                 });
+                setViewerState({
+                  isChannelLoading: selections.map(_ => false)
+                });
               }
             );
             const isRgb = metadata && guessRgb(metadata);

@@ -141,7 +141,17 @@ export const useImageSettingsStore = create(set => ({
     set(state => ({
       ...state,
       ...newState
-    }))
+    })),
+  setClippingPlaneSettings: (index, prop, val) =>
+    set(state => {
+      if (!['radius', 'theta', 'phi'].includes(prop)) {
+        throw new Error(`prop ${prop} for setting clipping plane not found`);
+      }
+      const newState = {};
+      newState.sphericals = [...state.sphericals];
+      newState.sphericals[index][prop] = val;
+      return { ...state, ...newState };
+    })
 }));
 
 const DEFAULT_VIEWER_STATE = {
