@@ -1,7 +1,5 @@
 /* eslint-disable no-nested-ternary */
 import React from 'react';
-import { Plane } from '@math.gl/culling';
-import { Matrix4 } from '@math.gl/core';
 import debounce from 'lodash/debounce';
 import {
   SideBySideViewer,

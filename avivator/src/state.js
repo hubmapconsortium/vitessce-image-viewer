@@ -8,8 +8,6 @@ import { _SphericalCoordinates as SphericalCoordinates } from '@math.gl/core';
 // eslint-disable-next-line import/no-unresolved
 import { RENDERING_MODES } from '@hms-dbmi/viv';
 
-import { EPSILON } from './constants';
-
 const captialize = string => string.charAt(0).toUpperCase() + string.slice(1);
 
 const generateToggles = (defaults, set) => {
@@ -62,18 +60,6 @@ export const useChannelsStore = create(set => ({
       entries.forEach(([property, value]) => {
         newState[property] = [...state[property]];
         newState[property][channel] = value;
-      });
-      return { ...state, ...newState };
-    }),
-  setPropertiesForChannels: (channels, newProperties) =>
-    set(state => {
-      const entries = Object.entries(newProperties);
-      const newState = {};
-      entries.forEach(([property, values]) => {
-        newState[property] = [...state[property]];
-        channels.forEach((channel, j) => {
-          newState[property].splice(channel, 1, values[j]);
-        });
       });
       return { ...state, ...newState };
     }),
@@ -136,13 +122,15 @@ const DEFAULT_IMAGE_STATE = {
   lensSelection: 0,
   colormap: '',
   renderingMode: RENDERING_MODES.MAX_INTENSITY_PROJECTION,
-  sphericals: [new SphericalCoordinates({ radius: EPSILON, phi: 0, theta: 0 })],
   resolution: 0,
   isLensOn: false,
   zoomLock: true,
   panLock: true,
   isOverviewOn: false,
   useFixedAxis: true,
+  xSlice: null,
+  ySlice: null,
+  zSlice: null,
   onViewportLoad: () => {}
 };
 
@@ -176,6 +164,7 @@ const DEFAULT_VIEWER_STATE = {
     message: null
   },
   isNoImageUrlSnackbarOn: false,
+  isVolumeRenderingWarningOn: false,
   useLinkedView: false,
   isControllerOn: true,
   use3d: false,

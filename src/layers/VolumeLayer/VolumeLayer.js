@@ -1,6 +1,5 @@
 import { CompositeLayer, COORDINATE_SYSTEM } from '@deck.gl/core';
 import { TextLayer } from '@deck.gl/layers';
-import GL from '@luma.gl/constants';
 import { Matrix4 } from 'math.gl';
 import XR3DLayer from '../XR3DLayer';
 import { getPhysicalSizeScalingMatrix } from '../utils';
@@ -155,7 +154,7 @@ const VolumeLayer = class extends CompositeLayer {
             text: `Loading Volume ${String((progress || 0) * 100).slice(
               0,
               5
-            )}% (Firefox/Chrome Only)...`,
+            )}%...`,
             position: viewport.position
           }
         ],

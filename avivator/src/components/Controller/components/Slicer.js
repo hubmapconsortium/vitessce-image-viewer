@@ -1,38 +1,61 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import Slider from '@material-ui/core/Slider';
-import Button from '@material-ui/core/Button';
-import { useImageSettingsStore, useViewerStore } from '../../../state';
-import { truncateDecimalNumber } from '../../../utils';
-import { EPSILON } from '../../../constants';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles, createStyles } from '@material-ui/core';
+
+import {
+  useImageSettingsStore,
+  useChannelSettings,
+  useViewerStore
+} from '../../../state';
+import { getBoundingCube, truncateDecimalNumber } from '../../../utils';
+
+const useStyles = makeStyles(theme =>
+  createStyles({
+    enabled: {},
+    disabled: {
+      color: theme.palette.text.disabled,
+      // Because of the .5 opacity of the disabled color in the theme, and the fact
+      // that there are multiple overlaid parts to the slider,
+      // this needs to be set manually for the desired effect.
+      '& .MuiSlider-thumb': {
+        color: 'rgb(100, 100, 100, 1.0)'
+      },
+      '&  .MuiSlider-track': {
+        color: 'rgb(100, 100, 100, 1.0)'
+      }
+    }
+  })
+);
 
 const Slicer = () => {
-  const {
-    setClippingPlaneSettings,
-    sphericals: [spherical]
-  } = useImageSettingsStore();
+  const { setImageSetting, xSlice, ySlice, zSlice } = useImageSettingsStore();
+  const { loader } = useChannelSettings();
+  const { use3d } = useViewerStore();
+  const [xSliceInit, ySliceInit, zSliceInit] = getBoundingCube(loader);
   const sliceValuesAndSetSliceFunctions = [
     [
-      spherical.phi,
-      v => setClippingPlaneSettings(0, 'phi', v),
-      'ϕ',
-      [0, Math.PI * 2]
+      xSlice,
+      xSliceNew => setImageSetting({ xSlice: xSliceNew }),
+      'x',
+      xSliceInit
     ],
     [
-      spherical.theta,
-      v => setClippingPlaneSettings(0, 'theta', v),
-      'ϴ',
-      [-Math.PI / 2, Math.PI / 2]
+      ySlice,
+      ySliceNew => setImageSetting({ ySlice: ySliceNew }),
+      'y',
+      ySliceInit
     ],
     [
-      spherical.radius,
-      v => setClippingPlaneSettings(0, 'radius', v),
-      'r',
-      // Since the box has diagonal length (1 + 1)^{\frac{1}{2}}
-      [EPSILON, Math.sqrt(2)]
+      zSlice,
+      zSliceNew => setImageSetting({ zSlice: zSliceNew }),
+      'z',
+      zSliceInit
     ]
   ];
-  const slicers = sliceValuesAndSetSliceFunctions.map(
+  const classes = useStyles();
+  const Slicers = sliceValuesAndSetSliceFunctions.map(
     ([val, setVal, label, [min, max]]) => (
       <Grid
         container
@@ -41,19 +64,22 @@ const Slicer = () => {
         alignItems="center"
         key={label}
       >
-        <Grid item xs={1}>
-          {label}:
+        <Grid item xs={1} style={{ marginBottom: 8 }}>
+          <Typography
+            className={!use3d ? classes.disabled : classes.enabled}
+            style={{ marginTop: 4 }}
+          >
+            {label}:
+          </Typography>
         </Grid>
         <Grid item xs={11}>
           <Slider
+            disabled={!use3d}
+            className={!use3d ? classes.disabled : classes.enabled}
             value={val}
             onChange={(e, v) => setVal(v)}
             valueLabelDisplay="auto"
-            valueLabelFormat={v =>
-              `${truncateDecimalNumber(label === 'r' ? v : v / Math.PI, 4)}${
-                label === 'r' ? '' : 'π'
-              }`
-            }
+            valueLabelFormat={v => truncateDecimalNumber(v, 5)}
             getAriaLabel={() => `${label} slider`}
             min={min}
             max={max}
@@ -64,35 +90,15 @@ const Slicer = () => {
       </Grid>
     )
   );
-  const presets = [
-    ['X', [EPSILON, 0.5 * Math.PI, 0.5 * Math.PI]],
-    ['Y', [EPSILON, -0.5 * Math.PI, 0]],
-    ['Z', [EPSILON, 0, 0]]
-  ].map(([label, [radius, theta, phi]]) => (
-    <Grid item xs="auto" key={label}>
-      <Button
-        onClick={() => {
-          setClippingPlaneSettings(0, 'radius', radius);
-          setClippingPlaneSettings(0, 'phi', phi);
-          setClippingPlaneSettings(0, 'theta', theta);
-        }}
-        style={{ padding: 0, paddingTop: 4 }}
-      >
-        {label} Slice
-      </Button>
-    </Grid>
-  ));
   return (
     <>
-      <Grid
-        container
-        direction="row"
-        justify="space-between"
-        alignItems="center"
+      <Typography
+        className={!use3d ? classes.disabled : classes.enabled}
+        style={{ marginTop: 16 }}
       >
-        {presets}
-      </Grid>
-      {slicers}
+        Clipping Planes:{' '}
+      </Typography>{' '}
+      {Slicers}
     </>
   );
 };

@@ -15,7 +15,12 @@ import {
   useViewerStore,
   useChannelSetters
 } from '../../../state';
-import { range, guessRgb, getMultiSelectionStats } from '../../../utils';
+import {
+  range,
+  guessRgb,
+  getMultiSelectionStats,
+  getBoundingCube
+} from '../../../utils';
 
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
@@ -72,18 +77,27 @@ const useStyles = makeStyles(() => ({
 function VolumeButton() {
   const { setImageSetting } = useImageSettingsStore();
   const { loader, selections } = useChannelSettings();
-  const { setPropertiesForChannels } = useChannelSetters();
-  const { use3d, toggleUse3d, metadata, setViewerState } = useViewerStore();
+  const { setPropertiesForChannel } = useChannelSetters();
+  const {
+    use3d,
+    toggleUse3d,
+    metadata,
+    toggleIsVolumeRenderingWarningOn,
+    setViewerState,
+    isViewerLoading
+  } = useViewerStore();
 
   const [open, toggle] = useReducer(v => !v, false);
   const anchorRef = useRef(null);
   const classes = useStyles();
+  const { shape, labels } = Array.isArray(loader) ? loader[0] : loader;
   return (
     <>
       <Button
         variant="outlined"
         size="small"
         ref={anchorRef}
+        disabled={!(shape[labels.indexOf('z')] > 1) || isViewerLoading}
         onClick={() => {
           toggle();
           // eslint-disable-next-line no-unused-expressions
@@ -94,9 +108,14 @@ function VolumeButton() {
             });
             getMultiSelectionStats({ loader, selections, use3d: !use3d }).then(
               ({ domains, sliders }) => {
-                setPropertiesForChannels(range(selections.length), {
-                  domains,
-                  sliders
+                range(selections.length).forEach((channel, j) =>
+                  setPropertiesForChannel(channel, {
+                    domains: domains[j],
+                    sliders: sliders[j]
+                  })
+                );
+                setViewerState({
+                  isChannelLoading: selections.map(_ => false)
                 });
                 setViewerState({
                   isChannelLoading: selections.map(_ => false)
@@ -137,7 +156,15 @@ function VolumeButton() {
                             setViewerState({
                               isChannelLoading: selections.map(_ => true)
                             });
-                            setImageSetting({ resolution });
+                            const [xSlice, ySlice, zSlice] = getBoundingCube(
+                              loader
+                            );
+                            setImageSetting({
+                              resolution,
+                              xSlice,
+                              ySlice,
+                              zSlice
+                            });
                             toggle();
                             getMultiSelectionStats({
                               loader,
@@ -146,9 +173,12 @@ function VolumeButton() {
                             }).then(({ domains, sliders }) => {
                               setImageSetting({
                                 onViewportLoad: () => {
-                                  setPropertiesForChannels(
-                                    range(selections.length),
-                                    { domains, sliders }
+                                  range(selections.length).forEach(
+                                    (channel, j) =>
+                                      setPropertiesForChannel(channel, {
+                                        domains: domains[j],
+                                        sliders: sliders[j]
+                                      })
                                   );
                                   setImageSetting({ onViewportLoad: () => {} });
                                   setViewerState({
@@ -157,6 +187,12 @@ function VolumeButton() {
                                 }
                               });
                               toggleUse3d();
+                              const isWebGL2Supported = !!document
+                                .createElement('canvas')
+                                .getContext('webgl2');
+                              if (!isWebGL2Supported) {
+                                toggleIsVolumeRenderingWarningOn();
+                              }
                             });
                             setViewerState({ useLens: false });
                           }}
