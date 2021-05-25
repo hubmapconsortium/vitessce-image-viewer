@@ -1,4 +1,5 @@
 import { CompositeLayer, COORDINATE_SYSTEM } from '@deck.gl/core';
+import GL from '@luma.gl/constants';
 import { TextLayer } from '@deck.gl/layers';
 import { Matrix4 } from 'math.gl';
 import XR3DLayer from '../XR3DLayer';
@@ -172,6 +173,13 @@ const VolumeLayer = class extends CompositeLayer {
         [GL.CULL_FACE_MODE]: GL.FRONT
       },
       physicalSizeScalingMatrix,
+      parameters: {
+        [GL.CULL_FACE]: true,
+        [GL.CULL_FACE_MODE]: GL.FRONT,
+        [GL.DEPTH_TEST]: false,
+        blendFunc: [GL.SRC_ALPHA, GL.ONE],
+        blend: true
+      },
       resolutionMatrix,
       dtype
     });
