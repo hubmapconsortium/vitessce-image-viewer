@@ -168,10 +168,6 @@ const VolumeLayer = class extends CompositeLayer {
     return new XR3DLayer(this.props, {
       channelData: { data, width, height, depth },
       id: `XR3DLayer-${0}-${height}-${width}-${0}-${resolution}-${id}`,
-      parameters: {
-        [GL.CULL_FACE]: true,
-        [GL.CULL_FACE_MODE]: GL.FRONT
-      },
       physicalSizeScalingMatrix,
       parameters: {
         [GL.CULL_FACE]: true,

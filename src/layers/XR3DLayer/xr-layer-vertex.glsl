@@ -19,12 +19,9 @@ uniform mat4 resolution;
 
 
 out vec3 vray_dir;
-flat out mat4 mvp;
 flat out vec3 transformed_eye;
 
 void main() {
-
-  mvp = proj * view * model * scale * resolution;
 
   // Step 1: Standard MVP transformation (+ the scale matrix) to place the positions on your 2D screen ready for rasterization + fragment processing.
   gl_Position = proj * view * model * scale * resolution * vec4(positions, 1.0);
@@ -43,7 +40,6 @@ void main() {
        | 
        |
        #
-
   This next diagram shows the volume after the inverse model matrix has placed it back in model coordinates, but the eye still in world space. 
        ^
     ___|___
@@ -54,7 +50,6 @@ void main() {
        |
        |
        #
-
   Finally, we apply the inverse model matrix transformation to the eye as well to bring it too into world space.
   Notice that the ray here matches the "voxels" through which the first ray also passes, as desired.
          ^
