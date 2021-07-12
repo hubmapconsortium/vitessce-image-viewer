@@ -1,6 +1,6 @@
 import { test } from 'tape';
 import { fromFile } from 'geotiff';
-import { getDecoder } from 'geotiff/src/compression';
+import { getDecoder } from '../../node_modules/geotiff/src/compression';
 
 import {
   createPoolProxy,
